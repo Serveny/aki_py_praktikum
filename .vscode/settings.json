@@ -1,0 +1,9 @@
+{
+  "python.autoComplete.extraPaths": [
+    "/Users/serveny/.vscode/extensions/stefanwehr.write-your-python-program-1.0.1/python/src/"
+  ],
+  "python.linting.enabled": false,
+  "python.analysis.extraPaths": [
+    "/Users/serveny/.vscode/extensions/stefanwehr.write-your-python-program-1.0.1/python/src/"
+  ]
+}
