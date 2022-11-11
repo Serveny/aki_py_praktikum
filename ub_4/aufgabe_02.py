@@ -12,17 +12,17 @@ class Zucker:
 # gruen: < 5g
 # gelb: zwischen 5g und 22,5g
 # rot: > 22,5g
-ampel = Literal["gruen", "gelb", "rot"]
+Ampel = Literal["gruen", "gelb", "rot"]
 
 # Zuckergehalt in Zucker(Glukose, Fruktrose), pro 100g oder Ampel(gruen, gelb, rot)
-zuckergehalt = Union[Zucker, float, ampel]
+Zuckergehalt = Union[Zucker, float, Ampel]
 
 # Name, Packungsgroesse und Zuckergehalt eines Lebensmittels
 @record
 class Lebensmittel:
     name: str
     packungsgroesseGramm: int
-    zuckergehalt: zuckergehalt
+    zuckergehalt: Zuckergehalt
 
 
 cocaCola = Lebensmittel("Coca Cola", 500, Zucker(25, 25))
@@ -48,8 +48,8 @@ def gesamtzuckergehaltPro100g(lm: Lebensmittel) -> Union[float, None]:
 # Errechnet den Ampelwert fuer das Lebensmittel
 # Eingang: Zuckergehalt: Union[Zucker, pro 100g: float, ampel]
 # Ausgang: Ampelwert: Literal(str)
-def ampelwert(lm: Lebensmittel) -> ampel:
-    if isinstance(lm.zuckergehalt, ampel):
+def ampelwert(lm: Lebensmittel) -> Ampel:
+    if isinstance(lm.zuckergehalt, Ampel):
         return lm.zuckergehalt
     else:
         gz = gesamtzuckergehaltPro100g(lm)

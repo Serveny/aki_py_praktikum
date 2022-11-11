@@ -14,19 +14,19 @@ class Zutaten:
 
 
 # Groesse einer Pizza
-groesse = Literal["normal", "gross"]
+Groesse = Literal["normal", "gross"]
 
 # Groesse und Zutaten einer Pizza
 @record
 class Pizza:
-    groesse: groesse
+    groesse: Groesse
     zutaten: Zutaten = Zutaten()
 
 
 # Errechnet den Preis einer Zutat
 # Eingang: Normalpreis: float, Pizzagroesse
 # Ausgang: Preis Zutat: float
-def preisZutat(normPreis: float, groesse: groesse) -> float:
+def preisZutat(normPreis: float, groesse: Groesse) -> float:
     return normPreis if groesse == "normal" else normPreis * 1.1
 
 
@@ -71,16 +71,16 @@ check(preisPizza(pizza_7), 4.59)
 # b)
 # --------------------------
 
-bierSorte = Literal["Pils", "Weizen"]
-bierGroesse = Literal["0.3", "0.5"]
+BierSorte = Literal["Pils", "Weizen"]
+BierGroesse = Literal["0.3", "0.5"]
 
 # Bier enthaelt:
 # Sorte: Literal
 # Menge in Liter: Literal
 @record
 class Bier:
-    sorte: bierSorte
-    groesse: bierGroesse
+    sorte: BierSorte
+    groesse: BierGroesse
 
 
 # Nudelgericht enthaelt
