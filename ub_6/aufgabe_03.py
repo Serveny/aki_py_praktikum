@@ -20,7 +20,7 @@ def insert(k: int, v: Any, l: list[tuple[int, Any]]) -> list[tuple[int, Any]]:
     return l + [(k, v)]
 
 
-# Test aus Uebungsblatt
+# Tests aus Uebungsblatt
 personList = [(42, "Max"), (100, "Helene"), (1, "Verena"), (10, "Dirk")]
 check(lookup(10, personList), "Dirk")
 check(lookup(11, personList), None)
