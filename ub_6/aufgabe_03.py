@@ -1,7 +1,7 @@
 from wypp import *
 
 # Liefert einen Wert zu einem Schluessel aus einer Schluessel-Wert-Paar-Liste zurueck
-# Eingang: Schluessel: str, Schluessel-Wert-Paar-Liste: [(int, Any)]
+# Eingang: Schluessel: int, Schluessel-Wert-Paar-Liste: [(int, Any)]
 # Ausgang: Gefundener Wert zu Schluessel: Union[Any, None]
 def lookup(k: int, l: list[tuple[int, Any]]) -> Union[Any, None]:
     for el in l:
