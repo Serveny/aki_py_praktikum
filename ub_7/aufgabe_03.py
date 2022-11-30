@@ -1,6 +1,6 @@
 from wypp import *
 
-# Gibt Zahl mit x und Potenz als String zurueck
+# Gibt Zahl mit x und Exponent ohne 1 als String zurueck
 # Eingang: Zahl: float, Exponent von x: int
 # Ausgang: Ausdruck als String
 def zToString(z: float, e: int) -> str:

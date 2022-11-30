@@ -11,4 +11,5 @@ def integrate(p: list[float]) -> list[float]:
 check(integrate([]), [0])
 check(integrate([42]), [0, 42])
 check(integrate([1, 2, 3]), [0, 1, 1, 1])
+check(integrate([1, -2, 3]), [0, 1, -1, 1])
 check(integrate([1, 1, 1, 1]), [0, 1, 0.5, 0.3333, 0.25])
