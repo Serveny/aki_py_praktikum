@@ -20,7 +20,6 @@ def derivative(p: list[float]) -> list[float]:
 
 
 def integrate(p: list[float]) -> list[float]:
-    # TODO
     return [0] + [(a / i) for i, a in enumerate(p) if i != 0]
 
 
