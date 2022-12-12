@@ -7,11 +7,12 @@ def myInsert(l: list[Any], i: int, x: Any) -> None:
     if i > len(l) - 1:
         l.append(x)
     else:
+        if i < -(len(l) + 1):
+            i = 0
         l.append(l[-1])
-        start = len(l) - 2
-        r = range(start, len(l) + i - 1, -1) if i < 0 else range(start, i - 1, -1)
+        r = range(len(l) - 1, len(l) + i if i < 0 else i, -1)
         for u in r:
-            l[u + 1] = l[u]
+            l[u] = l[u - 1]
         l[i] = x
 
 
@@ -35,3 +36,7 @@ check(liste_4, [1, 2, 3, 4, "blub"])
 liste_5 = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 myInsert(liste_5, -4, "blub")
 check(liste_5, [1, 2, 3, 4, 5, 6, "blub", 7, 8, 9])
+
+liste_5 = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+myInsert(liste_5, -400, "blub")
+check(liste_5, ["blub", 1, 2, 3, 4, 5, 6, 7, 8, 9])
