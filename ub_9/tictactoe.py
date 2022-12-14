@@ -121,17 +121,17 @@ check(game1[2][2], "o")
 # Eingang: Game
 # Ausgang: Darstellung als String: str
 def gameToString(game: Game) -> str:
-    return " " + " \n ".join([" | ".join(row) for row in game]) + " "
+    return "| " + " |\n| ".join([" | ".join(row) for row in game]) + " |"
 
 
 check(
     gameToString([["-", "-", "-"], ["-", "-", "-"], ["-", "-", "-"]]),
-    " - | - | - \n - | - | - \n - | - | - ",
+    "| - | - | - |\n| - | - | - |\n| - | - | - |",
 )
 
 check(
     gameToString(game1),
-    " x | - | - \n - | - | - \n - | - | o ",
+    "| x | - | - |\n| - | - | - |\n| - | - | o |",
 )
 
 # --- Aufgabe 5 ---
@@ -139,8 +139,10 @@ check(
 # Eingang: Player
 # Ausgang: Userinput i,j: tuple[int, int]
 def getMove(player: Player) -> tuple[int, int]:
-    move = input(f"Player {player}: Type in your coordinates xy (example: 12): ")
-    return (int(move[1]) - 1, int(move[0]) - 1)
+    move = input(
+        f"Player {player}: Type in your coordinates i,j (example: 1,3): "
+    ).split(",")
+    return (int(move[0]), int(move[1]))
 
 
 # --- Aufgabe 6 ---
@@ -165,7 +167,7 @@ def move(game: Game) -> bool:
     return halfMove(game, "x") or halfMove(game, "o")
 
 
-# --- Aufgabe 6 ---
+# --- Aufgabe 7 ---
 # Spielt ein komplettes Spiel durch
 # Eingang: None
 # Ausgang: None
