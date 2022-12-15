@@ -98,11 +98,15 @@ check(checkWinner([["x", "-", "-"], ["x", "-", "-"], ["-", "-", "-"]]), None)
 
 # -- Aufgabe 3 --
 # Bricht das Programm mit einer Fehlermeldung ab.
+# Eingang: Nachricht: str
+# Ausgang: None
 def error(msg: str) -> None:
     raise Exception(msg)
 
 
 # Platziert die Markierung eines Spielers auf dem Spielfeld.
+# Eingang: Game, i: int, j: int, Player
+# Ausgang: None
 # SEITENEFFEKT: veraendert game
 def placePlayer(game: Game, i: int, j: int, player: Player) -> None:
     if i > 2 or j > 2 or game[i][j] != "-":
@@ -163,6 +167,9 @@ def halfMove(game: Game, player: Player) -> bool:
     return False
 
 
+# Fuerht einen Spielzug aus
+# Eingang: Game
+# Ausgang: Ist Spiel zuende?: bool
 def move(game: Game) -> bool:
     return halfMove(game, "x") or halfMove(game, "o")
 
