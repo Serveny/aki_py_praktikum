@@ -143,9 +143,7 @@ check(
 # Eingang: Player
 # Ausgang: Userinput i,j: tuple[int, int]
 def getMove(player: Player) -> tuple[int, int]:
-    move = input(
-        f"Player {player}: Type in your coordinates i,j (example: 1,3): "
-    ).split(",")
+    move = input(f"  Eingabe Spieler {player} in der Form Zeile,Spalte: ").split(",")
     return (int(move[0]), int(move[1]))
 
 
@@ -159,10 +157,7 @@ def halfMove(game: Game, player: Player) -> bool:
     placePlayer(game, move[0], move[1], player)
     winner = checkWinner(game)
     if winner != None:
-        print(f"{gameToString(game)}\nGame over. Player {winner} wins.")
-        return True
-    elif gameFull(game):
-        print(f"{gameToString(game)}\nGame over. Nobody wins.")
+        print(f"Gewinner: {winner}")
         return True
     return False
 
@@ -180,5 +175,7 @@ def move(game: Game) -> bool:
 # Ausgang: None
 def fullGame() -> None:
     game = [["-", "-", "-"], ["-", "-", "-"], ["-", "-", "-"]]
-    while not move(game):
-        continue
+    for i in range(9):
+        print(f"Zug {i+1}")
+        if move(game):
+            break
