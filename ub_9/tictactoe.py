@@ -159,6 +159,9 @@ def halfMove(game: Game, player: Player) -> bool:
     if winner != None:
         print(f"Gewinner: {winner}")
         return True
+    if gameFull(game):
+        print("Spielende. Unentschieden.")
+        return True
     return False
 
 
@@ -175,7 +178,7 @@ def move(game: Game) -> bool:
 # Ausgang: None
 def fullGame() -> None:
     game = [["-", "-", "-"], ["-", "-", "-"], ["-", "-", "-"]]
-    for i in range(9):
+    for i in range(5):
         print(f"Zug {i+1}")
         if move(game):
             break
