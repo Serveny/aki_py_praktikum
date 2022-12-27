@@ -11,7 +11,5 @@ def loadGame(saveStr: str) -> Game:
     return game
 
 
-ttt = loadGame("4\nL1\nL1\nL4\n")
-print(column(ttt.arena, 0))
-ttt.moveInColToBottom(0)
-print(column(ttt.arena, 0))
+ttt = loadGame("4\nT2\nT2\nR1\nR1\nL1\nR1\n")
+print(ttt.arenaStr())

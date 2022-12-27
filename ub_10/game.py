@@ -1,12 +1,12 @@
 from prelude import *
 from move import Move, textToMoves
 
-
-# Holds game arena and game logic
+# Holds game arena and logic, the AI needs to follow the game
 class Game:
     size: int
     arena: GameArena
     currentPlayer: Player = "x"
+    archive: list[GameArena] = []
 
     # Constructor: Inits a empty game field
     def __init__(self, size: int) -> None:
@@ -18,7 +18,7 @@ class Game:
     # Raises exception
     def raiseIllegalMoveException(self, number: int) -> None:
         raise Exception(
-            f"Move index {number} outside of game field. Must be between 1 and {len(self.arena)}."
+            f"Move index {number} outside of game field. Must be between 1 and {self.size}."
         )
 
     # Gets one field of game field
@@ -28,6 +28,19 @@ class Game:
     # Sets one field and toggles current player
     def setField(self, coords: Coords) -> None:
         self.arena[coords[0]][coords[1]] = self.getAndToggleCurrentPlayer()
+
+    # Executes all given moves
+    def executeMoves(self, moves: list[Move]) -> None:
+        for move in moves:
+            self.execute(move)
+
+    # Executes one move
+    def execute(self, move: Move) -> None:
+        coords = self.indexBy(move)
+        if self.getField(coords) != "-":
+            self.moveFields(move, coords)
+        self.setField(coords)
+        self.archive.append(self.arena.copy())
 
     # Gets x,y index coordinates by move
     def indexBy(self, move: Move) -> Coords:
@@ -54,14 +67,6 @@ class Game:
                 self.moveInColToBottom(coords[1])
             case "B":
                 self.moveInColToTop(coords[1])
-
-    # Executes one move
-    def execute(self, move: Move) -> None:
-        coords = self.indexBy(move)
-        mark = self.getField(coords)
-        if mark != "-":
-            self.moveFields(move, coords)
-        self.setField(coords)
 
     # Finds index of first/last occurence of given mark in row
     def findIndexInRow(self, rowNo: int, mark: Mark, findLast: bool) -> Optional[int]:
@@ -95,17 +100,11 @@ class Game:
         for i in reversed(range(1, self.size if endI == None else (endI + 1))):
             self.arena[i][colI] = self.arena[i - 1][colI]
 
-    # Moves items in row one index up until free field occurs
+    # Moves items in column one index up until free field occurs
     def moveInColToTop(self, colI: int) -> None:
         endI = self.findIndexInCol(colI, "-", True)
-        r = range(0 if endI == None else endI, self.size - 1)
-        for i in r:
+        for i in range(0 if endI == None else endI, self.size - 1):
             self.arena[i][colI] = self.arena[i + 1][colI]
-
-    # Executes all given moves
-    def executeMoves(self, moves: list[Move]) -> None:
-        for move in moves:
-            self.execute(move)
 
     # Returns the current and toggles the property to another player
     def getAndToggleCurrentPlayer(self) -> Player:
@@ -116,6 +115,10 @@ class Game:
     # Return arena as string
     def arenaStr(self) -> str:
         return "| " + " |\n| ".join([" | ".join(row) for row in self.arena]) + " |"
+
+    # Returns winner
+    def winner(self) -> Optional[Player]:
+        pass
 
 
 # Tests
