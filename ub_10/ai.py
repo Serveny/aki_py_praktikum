@@ -4,5 +4,10 @@ from move import Move
 
 
 class Ai:
+    game: Game
+
+    def __init__(self, game: Game) -> None:
+        self.game = game
+
     def nextMove(game: Game) -> Move:
-        pass
+        return Move("R3")

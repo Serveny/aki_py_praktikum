@@ -17,6 +17,9 @@ class Move:
     def isVertical(self) -> bool:
         return self.direction == "T" or self.direction == "B"
 
+    def toStr(self) -> str:
+        return f"{self.direction}{self.number}"
+
 
 # Converts given text list to moves
 def textToMoves(moves: list[str]) -> list[Move]:
@@ -40,6 +43,10 @@ class MoveTests(unittest.TestCase):
         with self.assertRaises(Exception):
             Move("")
         with self.assertRaises(Exception):
-            Move("T1")
+            Move("1T")
         with self.assertRaises(Exception):
             Move("T")
+
+    def testToStr(self) -> None:
+        move = Move("T2")
+        self.assertEqual(move.toStr(), "T2")

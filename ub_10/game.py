@@ -14,12 +14,16 @@ class Game:
             raise Exception("Size too small. Must be at least 4.")
         self.size = size
         self.arena = [["-" for _ in range(size)] for _ in range(size)]
+        self.archiveCurrentArena()
 
     # Raises exception
     def raiseIllegalMoveException(self, number: int) -> None:
         raise Exception(
             f"Move index {number} outside of game field. Must be between 1 and {self.size}."
         )
+
+    def archiveCurrentArena(self) -> None:
+        self.archive.append([[item for item in row] for row in self.arena])
 
     # Gets one field of game field
     def getField(self, coords: Coords) -> Mark:
@@ -33,27 +37,28 @@ class Game:
     def executeMoves(self, moves: list[Move]) -> None:
         for move in moves:
             self.execute(move)
+            self.archiveCurrentArena()
 
     # Executes one move
     def execute(self, move: Move) -> None:
+        self.arena = self.archive[-1].copy()
         coords = self.indexBy(move)
         if self.getField(coords) != "-":
             self.moveFields(move, coords)
         self.setField(coords)
-        self.archive.append(self.arena.copy())
 
     # Gets x,y index coordinates by move
     def indexBy(self, move: Move) -> Coords:
-        if move.number < 1 or move.number > len(self.arena):
+        if move.number < 1 or move.number > self.size:
             self.raiseIllegalMoveException(move.number)
         x = 0
         y = 0
         if move.isVertical():
-            x = 0 if move.direction == "T" else (len(self.arena) - 1)
+            x = 0 if move.direction == "T" else (self.size - 1)
             y = move.number - 1
         else:
             x = move.number - 1
-            y = 0 if move.direction == "L" else (len(self.arena) - 1)
+            y = 0 if move.direction == "L" else (self.size - 1)
         return (x, y)
 
     # Moves fields in needed direction
@@ -116,9 +121,40 @@ class Game:
     def arenaStr(self) -> str:
         return "| " + " |\n| ".join([" | ".join(row) for row in self.arena]) + " |"
 
-    # Returns winner
-    def winner(self) -> Optional[Player]:
-        pass
+    # Checks if move is possible without loosing
+    def isMoveAllowed(self, move: Move) -> bool:
+        coords = self.indexBy(move)
+        maybeForbidden = [
+            arena
+            for arena in self.archive
+            if arena[coords[0]][coords[1]] == self.currentPlayer
+        ]
+
+    # Are two arenas filled with the same elements at same position?
+    def isSame(self, arena: GameArena) -> bool:
+        for y in range(self.size):
+            for x in range(self.size):
+                if self.arena[y][x] != arena[y][x]:
+                    return False
+        return True
+
+    # Checks if the current player has lost
+    def isLooseBySame(self) -> Optional[Player]:
+        if any(self.isSame(arena) for arena in self.archive[0:-2]):
+            return "o" if self.currentPlayer == "x" else "x"
+        return None
+
+    # Checks if one of the player has more on field
+    def isWinByMore(self) -> Optional[Player]:
+        xCount = 0
+        oCount = 0
+        for y in range(self.size):
+            for x in range(self.size):
+                if self.arena[y][x] == "x":
+                    xCount += 1
+                elif self.arena[y][x] == "o":
+                    oCount += 1
+        return None if xCount == oCount else ("x" if xCount > oCount else "o")
 
 
 # Tests
@@ -224,3 +260,17 @@ class GameTests(unittest.TestCase):
             ttt.arenaStr(),
             "| o | x | o | o |\n| - | x | - | - |\n| - | - | - | - |\n| - | - | - | - |",
         )
+
+    def testIsLooseBySame(self) -> None:
+        ttt = Game(4)
+        ttt.executeMoves(textToMoves("L1\nR1\nL1\nR1\nL1\n".split("\n")))
+        self.assertEqual(ttt.isLooseBySame(), None)
+        ttt.execute(Move("R1"))
+        self.assertEqual(ttt.isLooseBySame(), "o")
+
+    def testIsWinByMore(self) -> None:
+        ttt = Game(4)
+        ttt.executeMoves(textToMoves("L1\nR1\nL1\nR1\nR1\n".split("\n")))
+        self.assertEqual(ttt.isWinByMore(), None)
+        ttt.execute(Move("R2"))
+        self.assertEqual(ttt.isWinByMore(), "o")
