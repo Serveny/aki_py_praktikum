@@ -1,3 +1,4 @@
+import os
 from prelude import *
 from game import Game
 from move import textToMoves
@@ -6,13 +7,13 @@ import sys
 
 # Read file
 def readFile(path: str) -> list[str]:
-    with open(path) as file:
-        return [line for line in file]
+    with open(path, "r") as file:
+        return file.readlines()
 
 
 # Save file
 def saveFile(path: str, content: str) -> None:
-    with open(path) as file:
+    with open(path, "w") as file:
         file.write(content)
 
 
@@ -23,15 +24,27 @@ def loadGame(saveStr: list[str]) -> Game:
     return game
 
 
+# Just for local testing (To lazy to change code every time before upload)
+def testArgs() -> list[str]:
+    location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+    return [
+        "tick-trick-track.py",
+        os.path.join(location, "__dc.in.txt"),
+        os.path.join(location, "__dc.out.txt"),
+    ]
+
+
 # Program starts here
 def main() -> None:
-    saveStr = readFile(sys.argv[1])
+    args = testArgs() if len(sys.argv) < 3 else sys.argv
+    saveStr = readFile(args[1])
     game = loadGame(saveStr)
-    saveFile(sys.argv[2], Ai(game).nextMove().toStr())
+    nextMove = Ai(game).nextMove()
+    saveFile(args[2], nextMove.toStr())
 
 
-# main()
-
-game = Game(4)
-game.executeMoves(textToMoves("L1\nR1\nL1\nR1\nL1\n".split("\n")))
-print(f"Winner: {game.isLooseBySame()}")
+main()
+# ttt = Game(4)
+# ttt.executeMoves(textToMoves("R4\nR4\nR4\nR4\nR4\nB2\nB2\nB2\nB2\n".split("\n")))
+# ai = Ai(ttt)
+# print(ai.nextMove().toStr())

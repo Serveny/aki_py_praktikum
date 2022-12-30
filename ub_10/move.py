@@ -6,10 +6,14 @@ class Move:
     number: int
 
     # Constructor
-    def __init__(self, moveStr: str) -> None:
+    def __init__(self, moveStr: str, number: Optional[int] = None) -> None:
         try:
-            self.direction = moveStr[0]
-            self.number = int(moveStr[1])
+            if number == None:
+                self.direction = moveStr[0]
+                self.number = int(moveStr[1])
+            else:
+                self.direction = moveStr
+                self.number = number
         except Exception:
             raise Exception(f"Move not readable: {moveStr}")
 

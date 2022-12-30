@@ -7,6 +7,7 @@ class Game:
     arena: GameArena
     currentPlayer: Player = "x"
     archive: list[GameArena] = []
+    lastMove: Move
 
     # Constructor: Inits a empty game field
     def __init__(self, size: int) -> None:
@@ -31,13 +32,15 @@ class Game:
 
     # Sets one field and toggles current player
     def setField(self, coords: Coords) -> None:
-        self.arena[coords[0]][coords[1]] = self.getAndToggleCurrentPlayer()
+        self.arena[coords[0]][coords[1]] = self.currentPlayer
 
     # Executes all given moves
     def executeMoves(self, moves: list[Move]) -> None:
         for move in moves:
             self.execute(move)
             self.archiveCurrentArena()
+            self.toggleCurrentPlayer()
+        self.lastMove = moves[-1] if len(moves) > 0 else Move("R", self.size)
 
     # Executes one move
     def execute(self, move: Move) -> None:
@@ -111,18 +114,20 @@ class Game:
         for i in range(0 if endI == None else endI, self.size - 1):
             self.arena[i][colI] = self.arena[i + 1][colI]
 
+    # Returns other (not current) player
+    def otherPlayer(self) -> Player:
+        return "x" if self.currentPlayer == "o" else "o"
+
     # Returns the current and toggles the property to another player
-    def getAndToggleCurrentPlayer(self) -> Player:
-        current = str(self.currentPlayer)
-        self.currentPlayer = "x" if self.currentPlayer == "o" else "o"
-        return current
+    def toggleCurrentPlayer(self) -> None:
+        self.currentPlayer = self.otherPlayer()
 
     # Return arena as string
     def arenaStr(self) -> str:
         return "| " + " |\n| ".join([" | ".join(row) for row in self.arena]) + " |"
 
     # Checks if move is possible without loosing
-    def isMoveAllowed(self, move: Move) -> bool:
+    def isAllowedMove(self, move: Move) -> bool:
         coords = self.indexBy(move)
         maybeForbidden = [
             arena
@@ -139,22 +144,37 @@ class Game:
         return True
 
     # Checks if the current player has lost
-    def isLooseBySame(self) -> Optional[Player]:
-        if any(self.isSame(arena) for arena in self.archive[0:-2]):
-            return "o" if self.currentPlayer == "x" else "x"
-        return None
+    def isLooseBySame(self) -> bool:
+        return any(self.isSame(arena) for arena in self.archive[:-2])
 
     # Checks if one of the player has more on field
-    def isWinByMore(self) -> Optional[Player]:
+    def whoWon(self) -> Optional[Player]:
         xCount = 0
         oCount = 0
-        for y in range(self.size):
-            for x in range(self.size):
-                if self.arena[y][x] == "x":
-                    xCount += 1
-                elif self.arena[y][x] == "o":
-                    oCount += 1
+        for i in range(self.size):
+            horizontal = self.arena[i][0]
+            vertical = self.arena[0][i]
+
+            for u in range(1, self.size):
+                if self.arena[i][u] != horizontal:
+                    horizontal = "-"
+                if self.arena[u][i] != vertical:
+                    vertical = "-"
+
+            if vertical == "x":
+                xCount += 1
+            elif vertical == "o":
+                oCount += 1
+            if horizontal == "x":
+                xCount += 1
+            elif horizontal == "o":
+                oCount += 1
         return None if xCount == oCount else ("x" if xCount > oCount else "o")
+
+    # Executes move and checks if it is allowed
+    def isAllowedMove(self, move: Move) -> bool:
+        self.execute(move)
+        return self.whoWon() != self.otherPlayer() and not self.isLooseBySame()
 
 
 # Tests
@@ -264,13 +284,21 @@ class GameTests(unittest.TestCase):
     def testIsLooseBySame(self) -> None:
         ttt = Game(4)
         ttt.executeMoves(textToMoves("L1\nR1\nL1\nR1\nL1\n".split("\n")))
-        self.assertEqual(ttt.isLooseBySame(), None)
+        self.assertEqual(ttt.isLooseBySame(), False)
         ttt.execute(Move("R1"))
-        self.assertEqual(ttt.isLooseBySame(), "o")
+        self.assertEqual(ttt.isLooseBySame(), True)
 
-    def testIsWinByMore(self) -> None:
+    def testIsLooseBySame2(self) -> None:
         ttt = Game(4)
-        ttt.executeMoves(textToMoves("L1\nR1\nL1\nR1\nR1\n".split("\n")))
-        self.assertEqual(ttt.isWinByMore(), None)
-        ttt.execute(Move("R2"))
-        self.assertEqual(ttt.isWinByMore(), "o")
+        ttt.executeMoves(
+            textToMoves("R4\nR4\nR4\nR4\nR4\nB2\nB2\nB2\nB2\nB2\n".split("\n"))
+        )
+        self.assertEqual(ttt.isLooseBySame(), True)
+
+    def testWhoWon(self) -> None:
+        ttt = Game(4)
+        ttt.executeMoves(textToMoves("L1\nR1\nL1\nR1\nT3\nB4\n".split("\n")))
+        self.assertEqual(ttt.whoWon(), None)
+        ttt.execute(Move("T4"))
+
+        self.assertEqual(ttt.whoWon(), "x")
