@@ -1,13 +1,16 @@
 from prelude import *
 from move import Move, textToMoves
+from series import Series
 
 # Holds game arena and logic, the AI needs to follow the game
 class Game:
     size: int
     arena: GameArena
-    currentPlayer: Player = "x"
+    player: Player = "x"
+    enemy: Player = "o"
     archive: list[GameArena] = []
     lastMove: Move
+    kickout: Mark = "-"
 
     # Constructor: Inits a empty game field
     def __init__(self, size: int) -> None:
@@ -32,7 +35,7 @@ class Game:
 
     # Sets one field and toggles current player
     def setField(self, coords: Coords) -> None:
-        self.arena[coords[0]][coords[1]] = self.currentPlayer
+        self.arena[coords[0]][coords[1]] = self.player
 
     # Executes all given moves
     def executeMoves(self, moves: list[Move]) -> None:
@@ -90,50 +93,55 @@ class Game:
                 return i
         return None
 
+    # Save field which was kicked out
+    def addKickout(self, endI: Optional[int], coords: Coords) -> None:
+        if endI == None:
+            self.kickout = self.getField(coords)
+
     # Moves items in row one index right until free field occurs
     def moveInRowToRight(self, rowI: int) -> None:
         endI = self.findIndexInRow(rowI, "-", False)
+        self.addKickout(endI, (rowI, self.size - 1))
         for i in reversed(range(1, self.size if endI == None else (endI + 1))):
             self.arena[rowI][i] = self.arena[rowI][i - 1]
 
     # Moves items in row one index left until free field occurs
     def moveInRowToLeft(self, rowI: int) -> None:
         endI = self.findIndexInRow(rowI, "-", True)
+        self.addKickout(endI, (rowI, 0))
         for i in range(0 if endI == None else endI, self.size - 1):
             self.arena[rowI][i] = self.arena[rowI][i + 1]
 
     # Moves items in column one index down until free field occurs
     def moveInColToBottom(self, colI: int) -> None:
         endI = self.findIndexInCol(colI, "-", False)
+        self.addKickout(endI, (self.size - 1, colI))
         for i in reversed(range(1, self.size if endI == None else (endI + 1))):
             self.arena[i][colI] = self.arena[i - 1][colI]
 
     # Moves items in column one index up until free field occurs
     def moveInColToTop(self, colI: int) -> None:
         endI = self.findIndexInCol(colI, "-", True)
+        self.addKickout(endI, (0, colI))
         for i in range(0 if endI == None else endI, self.size - 1):
             self.arena[i][colI] = self.arena[i + 1][colI]
 
     # Returns other (not current) player
     def otherPlayer(self) -> Player:
-        return "x" if self.currentPlayer == "o" else "o"
+        return "x" if self.player == "o" else "o"
 
-    # Returns the current and toggles the property to another player
+    # Toggles the property to another player
     def toggleCurrentPlayer(self) -> None:
-        self.currentPlayer = self.otherPlayer()
+        self.enemy = self.player
+        self.player = self.otherPlayer()
+
+    # Is enemy kickout
+    def isEnemyKickout(self) -> bool:
+        return self.kickout == self.enemy
 
     # Return arena as string
     def arenaStr(self) -> str:
         return "| " + " |\n| ".join([" | ".join(row) for row in self.arena]) + " |"
-
-    # Checks if move is possible without loosing
-    def isAllowedMove(self, move: Move) -> bool:
-        coords = self.indexBy(move)
-        maybeForbidden = [
-            arena
-            for arena in self.archive
-            if arena[coords[0]][coords[1]] == self.currentPlayer
-        ]
 
     # Are two arenas filled with the same elements at same position?
     def isSame(self, arena: GameArena) -> bool:
@@ -175,6 +183,49 @@ class Game:
     def isAllowedMove(self, move: Move) -> bool:
         self.execute(move)
         return self.whoWon() != self.otherPlayer() and not self.isLooseBySame()
+
+    # Find series of points in a row or column
+    def findSeries(self) -> tuple[list[Series], list[Series]]:
+        resX = []
+        resY = []
+        for i in range(self.size):
+            seriesX = Series()
+            seriesY = Series()
+            for u in range(self.size):
+                seriesX = self.extendSeries(resX, seriesX, (u, i), self.arena[i][u])
+                seriesY = self.extendSeries(resY, seriesY, (i, u), self.arena[u][i])
+        return (resX, resY)
+
+    # Detects point series from start to end and adds it to result (Manipulates res & series)
+    def extendSeries(
+        self, res: list[Series], series: Series, coords: Coords, mark: Mark
+    ) -> Series:
+        if mark == "-":
+            if series.player != "-":
+                if series.length > 1:
+                    res.append(series)
+                series = Series()
+        else:
+            if series.player != "-" and mark == series.player:
+                series.end = coords
+                series.length += 1
+            else:
+                if series.player != "-" and series.length > 1:
+                    res.append(series)
+                series = Series(mark, 1, coords, coords)
+        return series
+
+    # Counts player marks in arena
+    def count(self, player: Player) -> int:
+        count = 0
+        for i in range(self.size):
+            for u in range(self.size):
+                if self.arena[i][u] == player:
+                    count += 1
+        return count
+
+    def enemyCount(self) -> int:
+        return self.count(self.otherPlayer())
 
 
 # Tests
@@ -302,3 +353,30 @@ class GameTests(unittest.TestCase):
         ttt.execute(Move("T4"))
 
         self.assertEqual(ttt.whoWon(), "x")
+
+    def testFindSeries(self) -> None:
+        ttt = Game(4)
+        ttt.executeMoves(textToMoves("L1\nL2\nL1\nL3\nL1\n".split("\n")))
+        series = ttt.findSeries()
+        self.assertEqual(series[0], [Series("x", 3, (0, 0), (2, 0))])
+        self.assertEqual(series[1], [Series("o", 2, (0, 1), (0, 2))])
+
+    def testCount(self) -> None:
+        ttt = Game(4)
+        ttt.executeMoves(textToMoves("L1\nL2\nL1\nL3\nL1\n".split("\n")))
+        self.assertEqual(ttt.count("x"), 3)
+        self.assertEqual(ttt.count("o"), 2)
+
+    def testKickoutHorizontal(self) -> None:
+        ttt = Game(4)
+        ttt.executeMoves(textToMoves("L1\nL1\nL1\nL1\nL1\n".split("\n")))
+        self.assertEqual(ttt.kickout, "x")
+        ttt.execute(Move("R1"))
+        self.assertEqual(ttt.kickout, "x")
+
+    def testKickoutVertical(self) -> None:
+        ttt = Game(4)
+        ttt.executeMoves(textToMoves("T1\nT1\nT1\nT1\nT1\n".split("\n")))
+        self.assertEqual(ttt.kickout, "x")
+        ttt.execute(Move("B1"))
+        self.assertEqual(ttt.kickout, "x")

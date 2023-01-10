@@ -44,6 +44,10 @@ def main() -> None:
 
 
 main()
+
+# ttt = Game(4)
+# ttt.executeMoves(textToMoves("L1\nL2\nL1\nL3\nL1\n".split("\n")))
+# print(ttt.findSeries())
 # ttt = Game(4)
 # ttt.executeMoves(textToMoves("R4\nR4\nR4\nR4\nR4\nB2\nB2\nB2\nB2\n".split("\n")))
 # ai = Ai(ttt)
